@@ -16,17 +16,8 @@ NUM_CLIENTS=10
 NUM_TRANSACTIONS=10
 
 # Query file
-#QUERY_FILE="query_anti_join_by_id.sql"
-#QUERY_FILE="query_left_join_by_id.sql"
-#QUERY_FILE="query_not_in_by_id.sql"
-#QUERY_FILE="query_ready_to_read_by_id.sql"
-#QUERY_FILE="query_anti_join_by_date.sql"
-#QUERY_FILE="query_left_join_by_date.sql"
-#QUERY_FILE="query_not_in_by_date.sql"
+QUERY_FILE="query_ready_to_read_by_id.sql"
 #QUERY_FILE="query_ready_to_read_by_date.sql"
-#QUERY_FILE="query_anti_join_two_table_by_id.sql"
-QUERY_FILE="query_anti_join_two_table_by_date.sql"
-#QUERY_FILE="query_left_join_two_table_by_date.sql"
 
 # Construct the pgbench command with custom query and parameters
 function run_pgbench() {

@@ -1,6 +1,12 @@
-# Acceleration Insertion for PostgreSQL - PgConf2024 🚀
+# Acceleration Insertion for PostgreSQL from multithreading to atomicity 🚀
 
 ## **Description**
+
+This branch for testing the atomicity through the `ready_to_read` flag. For other approaches use branches:
+- `transaction_id_in_other_table`- for testing the atomicity through `transaction id` in the other table. 
+- `transaction_id_in_two_table`- for testing the atomicity through `transaction id` in the two table. 
+
+## **Application**
 
 This application is designed to test various methods for inserting data into a PostgreSQL database. It's built with:
 - A Kotlin-based backend.
@@ -51,63 +57,36 @@ This application is designed to test various methods for inserting data into a P
 Use the following endpoints to test different insertion methods. You can specify the number of rows to generate in the database and retrieve results with performance metrics. For convenience, utilize `curl -X POST` to interact with these endpoints. The number of rows to create is specified by the `count` path parameter.
 
 ```bash
-# Insert using Spring
+# Insert by Spring
 http://localhost:8080/test-insertion/spring/{count}
 
-# Insert using Spring and Copy method
-http://localhost:8080/test-insertion/spring-with-copy/{count}
-
-# Insert using Spring and Copy with several concurrent savers
-http://localhost:8080/test-insertion/spring-with-copy-concurrent/{count}
-
-# Insert using Spring by save all method
-http://localhost:8080/test-insertion/spring-save-all/{count}
-
-# Insert using Spring with manual persisting
-http://localhost:8080/test-insertion/spring-with-manual-persisting/{count}
+# Insert by Spring with async approach
+http://localhost:8080/test-insertion/save-by-spring-with-async/{count}
 
 # Update using Spring
 http://localhost:8080/test-insertion/spring-update/{count}
 
-# Create data using the INSERT method. The data will be saved in batches of 5,000 rows.
-http://localhost:8080/test-insertion/insert/{count}
+# Update using stateless session hibernate
+http://localhost:8080/test-insertion/spring-update-by-session/{count}
 
-# Create data using the INSERT method with prepared statement. The data will be saved in batches of 5,000 rows.
-http://localhost:8080/test-insertion/insert-prepared-statement/{count}
+# Set ready to read by list of payment document id
+http://localhost:8080/test-insertion/set-ready-to-read/{count}
 
-# Create data using the INSERT method with KProperty map.
-http://localhost:8080/test-insertion/insert-by-property/{count}
+# Set ready to read using `any(?)`
+http://localhost:8080/test-insertion/set-ready-to-read-array/{count}
 
-# Create data using the INSERT method with prepared statement and dropping index before transaction and recreating it after that. The data will be saved in batches of 5,000 rows.
-http://localhost:8080/test-insertion/insert-with-drop-index/{count}
+# Set ready to read using `any(?)` after insert
+http://localhost:8080/test-insertion/set-ready-to-read-array-after-insert/{count}
 
-# Create data using the COPY method without saving file to disk. The data will be saved in batches of 5,000 rows.
-http://localhost:8080/test-insertion/copy/{count}
+# Set ready to read using select by unnest method
+http://localhost:8080/test-insertion/set-ready-to-read-unnest/{count}
 
-# Create data with KProperty map using the COPY method without saving file to disk.
-http://localhost:8080/test-insertion/copy-by-property/{count}
+# Set ready to read by transaction id
+http://localhost:8080/test-insertion/set-ready-to-read-by-transaction-id/{transactionId}
 
-# Create data using the COPY method with binary transformation. All data will be saved in one transaction.
-http://localhost:8080/test-insertion/copy-by-binary/{count}
+# Atomic Multi-threaded Insertion with Spring by list id of payment document
+http://localhost:8080/test-insertion/save-concurrent-and-atomic/{count}
 
-# Create data with KProperty map using the COPY method with binary transformation.
-http://localhost:8080/test-insertion/copy-by-binary-and-property/{count}
-
-# Create data using the COPY method with saving file to disk.
-http://localhost:8080/test-insertion/copy-by-file/{count}
-
-# Create data using the COPY method with saving binary file to disk.
-http://localhost:8080/test-insertion/copy-by-binary-file/{count}
-
-# Create data using the COPY method and KProperty map with saving file to disk.
-http://localhost:8080/test-insertion/copy-by-file-and-property/{count}
-
-# Create data using the COPY method and KProperty map with saving binary file to disk.
-http://localhost:8080/test-insertion/copy-by-binary-file-and-property/{count}
-
-# Update data using SQL script.
-http://localhost:8080/test-insertion/update/{count}
-
-# Update data using KProperty map and SQL script. 
-http://localhost:8080/test-insertion/update-by-property/{count}
+# Atomic Multi-threaded Insertion with Spring by transaction id
+http://localhost:8080/test-insertion/save-concurrent-and-atomic-by-transaction-id/{count}
 ```

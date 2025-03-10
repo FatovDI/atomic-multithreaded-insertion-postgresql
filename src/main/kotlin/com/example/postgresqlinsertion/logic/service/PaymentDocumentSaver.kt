@@ -73,27 +73,6 @@ class PaymentDocumentSaver(
     }
 
     @Async("threadPoolAsyncInsertExecutor")
-    fun saveBatchAsync(
-        entities: List<PaymentDocumentEntity>,
-        transactionId: UUID
-    ): Future<List<PaymentDocumentEntity>> {
-        val savedEntities = paymentDocumentRepository.saveAll(entities)
-        return CompletableFuture.completedFuture(savedEntities)
-    }
-//    @Async("threadPoolAsyncInsertExecutor")
-//    fun saveBatchAsync(
-//        entities: List<PaymentDocumentEntity>,
-//        transactionId: UUID
-//    ): Future<List<PaymentDocumentEntity>> {
-//        val savedEntities = entities
-//            .map { PaymentDocumentActiveTransactionEntity(paymentDocument = it, transactionId = transactionId) }
-//            .let { activeTransactionRepository.saveAll(it) }
-//            .mapNotNull { it.paymentDocument }
-//
-//        return CompletableFuture.completedFuture(savedEntities)
-//    }
-
-    @Async("threadPoolAsyncInsertExecutor")
     fun setTransactionIdAsync(ids: List<Long>): Future<Array<IntArray>> {
         return AsyncResult(setTransactionId(ids))
     }
@@ -107,11 +86,6 @@ class PaymentDocumentSaver(
             ps.setObject(1, transactionId)
             ps.setLong(2, argument)
         }
-    }
-
-    @Async("threadPoolAsyncInsertExecutor")
-    fun saveBatchBySessionAsync(entities: List<PaymentDocumentEntity>): Future<List<PaymentDocumentEntity>> {
-        return AsyncResult(batchUpdateBySession(entities))
     }
 
     fun batchUpdateBySession(entities: List<PaymentDocumentEntity>): List<PaymentDocumentEntity> {
