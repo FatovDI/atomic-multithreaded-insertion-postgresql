@@ -3,8 +3,8 @@
 ## **Description**
 
 This branch for testing the atomicity through the `ready_to_read` flag. For other approaches use branches:
-- `transaction_id_in_other_table`- for testing the atomicity through `transaction id` in the other table. 
-- `transaction_id_in_two_table`- for testing the atomicity through `transaction id` in the two table. 
+- [transaction_id_in_other_table](https://github.com/FatovDI/atomic-multithreaded-insertion-postgresql/tree/transaction_id_in_other_table) - for testing the atomicity through `transaction id` in the other table. 
+- [transaction_id_in_two_table](https://github.com/FatovDI/atomic-multithreaded-insertion-postgresql/tree/transaction_id_in_two_table) - for testing the atomicity through `transaction id` in the two table. 
 
 ## **Application**
 
