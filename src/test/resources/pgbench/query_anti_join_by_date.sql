@@ -18,5 +18,5 @@ SELECT paymentdoc0_.id              as id1_4_,
        paymentdoc0_.prop_20         as prop_9_4_
 FROM payment_document paymentdoc0_
 WHERE NOT EXISTS(SELECT * FROM active_transaction at WHERE at.id = paymentdoc0_.id)
-  AND paymentdoc0_.order_date = '2025-01-19';
+  AND paymentdoc0_.order_date = '2025-03-16';
 --   AND paymentdoc0_.order_date = :dt;
