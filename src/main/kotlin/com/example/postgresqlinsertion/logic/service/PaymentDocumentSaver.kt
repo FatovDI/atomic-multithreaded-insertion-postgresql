@@ -3,88 +3,21 @@ package com.example.postgresqlinsertion.logic.service
 import com.example.postgresqlinsertion.logic.entity.PaymentDocumentEntity
 import com.example.postgresqlinsertion.logic.repository.PaymentDocumentRepository
 import org.hibernate.SessionFactory
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.scheduling.annotation.Async
-import org.springframework.scheduling.annotation.AsyncResult
 import org.springframework.stereotype.Component
-import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
-import javax.sql.DataSource
 
 @Component
 class PaymentDocumentSaver(
     val paymentDocumentRepository: PaymentDocumentRepository,
     val sessionFactory: SessionFactory,
-    dataSource: DataSource,
-    val jdbcTemplate: JdbcTemplate = JdbcTemplate(dataSource),
 ) {
-
-    @Value("\${batch_insertion.batch_size}")
-    private var batchSize: Int = 5000
-
-    fun removeTransactionId(transactionId: UUID): Int {
-        return jdbcTemplate.update(
-            "update payment_document set transaction_id = null where transaction_id = ?"
-        ) {  ps ->
-            ps.setObject(1, transactionId)
-        }
-    }
-
-    fun setReadyToRead(transactionId: UUID): Int {
-        return jdbcTemplate.update(
-            "update payment_document set ready_to_read = true  where transaction_id = ?") {  ps ->
-            ps.setObject(1, transactionId)
-        }
-    }
-
-    fun setReadyToReadUnnest(idList: List<Long>): Int {
-        return jdbcTemplate.update(
-            """
-                update payment_document pd set ready_to_read = true 
-                from (select unnest(?) as id) as id_table where pd.id = id_table.id
-            """.trimIndent()) {  ps ->
-            ps.setObject(1, idList.toTypedArray())
-        }
-    }
-
-    fun setReadyToReadArray(idList: List<Long>): Int {
-        return jdbcTemplate.update(
-            "update payment_document set ready_to_read = true where id = any (?)"
-        ) {  ps ->
-            ps.setObject(1, idList.toTypedArray())
-        }
-    }
-
-    fun setReadyToRead(idList: List<Long>): Array<IntArray> {
-        return jdbcTemplate.batchUpdate(
-            "update payment_document set ready_to_read = true where id = ?",
-            idList, batchSize) {  ps, argument ->
-            ps.setLong(1, argument)
-        }
-    }
 
     @Async("threadPoolAsyncInsertExecutor")
     fun saveBatchAsync(entities: List<PaymentDocumentEntity>): Future<List<PaymentDocumentEntity>> {
         val savedEntities = paymentDocumentRepository.saveAll(entities)
         return CompletableFuture.completedFuture(savedEntities)
-    }
-
-    @Async("threadPoolAsyncInsertExecutor")
-    fun setTransactionIdAsync(ids: List<Long>): Future<Array<IntArray>> {
-        return AsyncResult(setTransactionId(ids))
-    }
-
-    fun setTransactionId(ids: List<Long>): Array<IntArray> {
-        val transactionId = UUID.randomUUID()
-        return jdbcTemplate.batchUpdate(
-            "update payment_document set transaction_id = ? where id = ?",
-            ids, batchSize
-        ) { ps, argument ->
-            ps.setObject(1, transactionId)
-            ps.setLong(2, argument)
-        }
     }
 
     fun batchUpdateBySession(entities: List<PaymentDocumentEntity>): List<PaymentDocumentEntity> {

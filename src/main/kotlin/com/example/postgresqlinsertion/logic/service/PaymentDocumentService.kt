@@ -9,16 +9,11 @@ import com.example.postgresqlinsertion.logic.repository.PaymentDocumentCustomRep
 import com.example.postgresqlinsertion.logic.sys.SqlHelper
 import com.example.postgresqlinsertion.utils.getRandomString
 import com.example.postgresqlinsertion.utils.logger
-import com.fasterxml.uuid.Generators
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
-import java.math.BigInteger
 import java.time.LocalDate
-import java.util.*
 import java.util.concurrent.Future
-import javax.persistence.EntityManager
-import javax.persistence.PersistenceContext
 import javax.transaction.Transactional
 import kotlin.random.Random
 
@@ -33,9 +28,6 @@ class PaymentDocumentService(
     private val repository: PaymentDocumentCustomRepository,
     private val saver: PaymentDocumentSaver,
 ) {
-
-    @PersistenceContext
-    lateinit var entityManager: EntityManager
 
     private val log by logger()
 
@@ -56,59 +48,15 @@ class PaymentDocumentService(
         return saveTasks.flatMap { it.get().mapNotNull { pd -> pd.id } }
     }
 
-    fun saveBySpringConcurrentAtomic(count: Int): Int {
-        val currencies = currencyRepo.findAll()
-        val accounts = accountRepo.findAll()
-
-        var listForSave = mutableListOf<PaymentDocumentEntity>()
-        val saveTasks = mutableListOf<Future<List<PaymentDocumentEntity>>>()
-        (1..count).forEach {
-            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random())
-                .apply { readyToRead = false }
-            )
-            if (it != 0 && it % batchSize == 0) {
-                saveTasks.add(saver.saveBatchAsync(listForSave))
-                listForSave = mutableListOf()
-            }
-        }
-        listForSave.takeIf { it.isNotEmpty() }?.let { saveTasks.add(saver.saveBatchAsync(it)) }
-
-        val ids = saveTasks.flatMap { it.get().mapNotNull { pd -> pd.id } }
-        return saver.setReadyToReadArray(ids)
-    }
-
-    fun saveBySpringConcurrentWithTransactionIdAtomic(count: Int): Int {
-        val currencies = currencyRepo.findAll()
-        val accounts = accountRepo.findAll()
-
-        var listForSave = mutableListOf<PaymentDocumentEntity>()
-        val saveTasks = mutableListOf<Future<List<PaymentDocumentEntity>>>()
-        val transactionId = Generators.timeBasedEpochGenerator().generate()
-        (1..count).forEach {
-            listForSave.add(
-                getRandomEntity(null, currencies.random(), accounts.random(), transactionId)
-                    .apply { readyToRead = false }
-            )
-            if (it != 0 && it % batchSize == 0) {
-                saveTasks.add(saver.saveBatchAsync(listForSave))
-                listForSave = mutableListOf()
-            }
-        }
-        listForSave.takeIf { it.isNotEmpty() }?.let { saveTasks.add(saver.saveBatchAsync(it)) }
-
-        saveTasks.flatMap { it.get() }
-        return saver.setReadyToRead(transactionId)
-    }
-
     @Transactional
-    fun saveBySpring(count: Int, transactionId: UUID? = null) {
+    fun saveBySpring(count: Int) {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
 
         log.info("start save $count by Spring")
         for (i in 0 until count) {
             repository.save(
-                getRandomEntity(null, currencies.random(), accounts.random(), transactionId, null)
+                getRandomEntity(null, currencies.random(), accounts.random())
             )
         }
         log.info("end save $count by Spring")
@@ -137,68 +85,10 @@ class PaymentDocumentService(
         saver.batchUpdateBySession(listForSave)
     }
 
-    fun setReadyToRead(count: Int): Int {
-        log.info("get list id for set ready to read $count")
-        val listId = sqlHelper.getIdListForSetReadyToRead(count, PaymentDocumentEntity::class)
-        log.info("start set ready to read $count")
-        return saver.setReadyToRead(listId).sumOf { it.sum() }
-    }
-
-    fun setReadyToReadUnnest(count: Int, ids: List<Long>? = null): Int {
-        log.info("get list id for set ready to read with unnest $count")
-        val listId = ids ?: sqlHelper.getIdListForSetReadyToRead(count, PaymentDocumentEntity::class)
-        log.info("start set ready to read with unnest $count")
-        return saver.setReadyToReadUnnest(listId)
-    }
-
-    fun setReadyToReadArray(count: Int, ids: List<Long>? = null): Int {
-        log.info("get list id for set ready to read with array $count")
-        val listId = ids ?: sqlHelper.getIdListForSetReadyToRead(count, PaymentDocumentEntity::class)
-        log.info("start set ready to read with array $count")
-        return saver.setReadyToReadArray(listId)
-    }
-
-    fun saveByConcurrentAtomic(count: Int): Int {
-        val currencies = currencyRepo.findAll()
-        val accounts = accountRepo.findAll()
-
-        var listForSave = mutableListOf<PaymentDocumentEntity>()
-        val saveTasks = mutableListOf<Future<List<PaymentDocumentEntity>>>()
-        val transactionId = Generators.timeBasedEpochGenerator().generate()
-        (1..count).forEach {
-            listForSave.add(
-                getRandomEntity(null, currencies.random(), accounts.random(), transactionId)
-            )
-            if (it != 0 && it % batchSize == 0) {
-                saveTasks.add(saver.saveBatchAsync(listForSave))
-                listForSave = mutableListOf()
-            }
-        }
-        listForSave.takeIf { it.isNotEmpty() }?.let { saveTasks.add(saver.saveBatchAsync(it)) }
-        saveTasks.flatMap { it.get() }
-
-        return saver.removeTransactionId(transactionId)
-
-    }
-
-    fun setReadyToReadByTransactionId(transactionId: UUID): Int {
-        return saver.setReadyToRead(transactionId)
-    }
-
-    fun setTransactionId(count: Int, countRow: Int = 4000000): Int {
-        val results = mutableListOf<Future<Array<IntArray>>>()
-        val listId = entityManager.createNativeQuery("select id from payment_document where transaction_id is null limit ${countRow*count}").resultList as List<BigInteger>
-        listId.chunked(countRow).forEach {ids ->
-            results.add(saver.setTransactionIdAsync(ids.map { it.toLong() }))
-        }
-        return results.flatMap { it.get().toList() }.sumOf { it.sum() }
-    }
-
     private fun getRandomEntity(
         id: Long?,
         cur: CurrencyEntity,
         account: AccountEntity,
-        transactionId: UUID? = null,
         orderNumber: String? = null
     ): PaymentDocumentEntity {
         return PaymentDocumentEntity(
@@ -214,8 +104,6 @@ class PaymentDocumentService(
             prop20 = getRandomString(20),
         )
             .apply { this.id = id }
-            .apply { this.transactionId = transactionId }
-            .apply { this.readyToRead = transactionId?.let { false }?: true }
     }
 
 }

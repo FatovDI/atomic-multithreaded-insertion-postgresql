@@ -1,6 +1,6 @@
 SET SCHEMA 'test_insertion';
 
-\set id random(203958073, 203959073)
+\set id random(1000071, 1001071)
 
 select paymentdoc0_.id              as id1_4_,
        paymentdoc0_.account_id      as account10_4_,
@@ -14,5 +14,4 @@ select paymentdoc0_.id              as id1_4_,
        paymentdoc0_.prop_15         as prop_8_4_,
        paymentdoc0_.prop_20         as prop_9_4_
 from payment_document paymentdoc0_
-where ( paymentdoc0_.ready_to_read = true )
-  and paymentdoc0_.id = :id;
+where paymentdoc0_.id = :id;

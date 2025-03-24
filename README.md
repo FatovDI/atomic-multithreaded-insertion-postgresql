@@ -2,7 +2,8 @@
 
 ## **Description**
 
-This branch for testing the atomicity through the `ready_to_read` flag. For other approaches use branches:
+This branch for testing not atomic insertion. For testing atomic approaches use branches:
+- [ready_to_read](https://github.com/FatovDI/atomic-multithreaded-insertion-postgresql/tree/ready_to_read) - for testing the atomicity through the `ready_to_read` flag.
 - [transaction_id_in_other_table](https://github.com/FatovDI/atomic-multithreaded-insertion-postgresql/tree/transaction_id_in_other_table) - for testing the atomicity through `transaction id` in the other table. 
 - [transaction_id_in_two_table](https://github.com/FatovDI/atomic-multithreaded-insertion-postgresql/tree/transaction_id_in_two_table) - for testing the atomicity through `transaction id` in the two table. 
 
@@ -68,25 +69,4 @@ http://localhost:8080/test-insertion/spring-update/{count}
 
 # Update using stateless session hibernate
 http://localhost:8080/test-insertion/spring-update-by-session/{count}
-
-# Set ready to read by list of payment document id
-http://localhost:8080/test-insertion/set-ready-to-read/{count}
-
-# Set ready to read using `any(?)`
-http://localhost:8080/test-insertion/set-ready-to-read-array/{count}
-
-# Set ready to read using `any(?)` after insert
-http://localhost:8080/test-insertion/set-ready-to-read-array-after-insert/{count}
-
-# Set ready to read using select by unnest method
-http://localhost:8080/test-insertion/set-ready-to-read-unnest/{count}
-
-# Set ready to read by transaction id
-http://localhost:8080/test-insertion/set-ready-to-read-by-transaction-id/{transactionId}
-
-# Atomic Multi-threaded Insertion with Spring by list id of payment document
-http://localhost:8080/test-insertion/save-concurrent-and-atomic/{count}
-
-# Atomic Multi-threaded Insertion with Spring by transaction id
-http://localhost:8080/test-insertion/save-concurrent-and-atomic-by-transaction-id/{count}
 ```

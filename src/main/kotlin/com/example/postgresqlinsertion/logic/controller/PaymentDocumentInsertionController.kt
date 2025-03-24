@@ -2,8 +2,10 @@ package com.example.postgresqlinsertion.logic.controller
 
 import com.example.postgresqlinsertion.logic.dto.ResponseDto
 import com.example.postgresqlinsertion.logic.service.PaymentDocumentService
-import org.springframework.web.bind.annotation.*
-import java.util.*
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 import kotlin.system.measureTimeMillis
 
 @RestController
@@ -24,121 +26,10 @@ class PaymentDocumentInsertionController(
         )
     }
 
-    @PostMapping("/set-ready-to-read/{count}")
-    fun setReadyToRead(@PathVariable count: Int): ResponseDto {
-        var countUpd: Int
-        val time = measureTimeMillis {
-            countUpd = service.setReadyToRead(count)
-        }
-        return ResponseDto(
-            name = "Set ready to read jdbcTemplate",
-            count = countUpd,
-            time = getTimeString(time)
-        )
-    }
-
-    @PostMapping("/set-ready-to-read-unnest/{count}")
-    fun setReadyToReadUnnest(@PathVariable count: Int): ResponseDto {
-        var countUpd: Int
-        val time = measureTimeMillis {
-            countUpd = service.setReadyToReadUnnest(count)
-        }
-        return ResponseDto(
-            name = "Set ready to read unnest",
-            count = countUpd,
-            time = getTimeString(time)
-        )
-    }
-
-    @PostMapping("/set-ready-to-read-array/{count}")
-    fun setReadyToReadArray(@PathVariable count: Int): ResponseDto {
-        var countUpd: Int
-        val time = measureTimeMillis {
-            countUpd = service.setReadyToReadArray(count)
-        }
-        return ResponseDto(
-            name = "Set ready to read array",
-            count = countUpd,
-            time = getTimeString(time)
-        )
-    }
-
-    @PostMapping("/set-transaction-id/{count}")
-    fun setTransactionId(
-        @PathVariable count: Int,
-        @RequestParam countRow: Int = 4000000
-    ): ResponseDto {
-        var countUpd: Int
-        val time = measureTimeMillis {
-            countUpd = service.setTransactionId(count, countRow)
-        }
-        return ResponseDto(
-            name = "Set transaction ID",
-            count = countUpd,
-            time = getTimeString(time)
-        )
-    }
-
-    @PostMapping("/set-ready-to-read-by-transaction-id/{transactionId}")
-    fun setReadyToReadByTransactionId(@PathVariable transactionId: UUID): ResponseDto {
-        var countUpd: Int
-        val time = measureTimeMillis {
-            countUpd = service.setReadyToReadByTransactionId(transactionId)
-        }
-        return ResponseDto(
-            name = "Set ready to read by transaction ID",
-            count = countUpd,
-            time = getTimeString(time)
-        )
-    }
-
-    @PostMapping("/set-ready-to-read-array-after-insert/{count}")
-    fun setReadyToReadArrayAfterInsert(@PathVariable count: Int): ResponseDto {
-        var countUpd: Int
-        val ids = service.saveBySpringConcurrent(count)
-        val time = measureTimeMillis {
-            countUpd = service.setReadyToReadArray(count, ids)
-        }
-        return ResponseDto(
-            name = "Set ready to read array after insert",
-            count = countUpd,
-            time = getTimeString(time)
-        )
-    }
-
-    @PostMapping("/save-concurrent-and-atomic/{count}")
-    fun saveBySpringConcurrentAndAtomic(@PathVariable count: Int): ResponseDto {
-        var countUpd: Int
-        val time = measureTimeMillis {
-            countUpd = service.saveBySpringConcurrentAtomic(count)
-        }
-        return ResponseDto(
-            name = "save concurrent and atomic",
-            count = countUpd,
-            time = getTimeString(time)
-        )
-    }
-
-    @PostMapping("/save-concurrent-and-atomic-by-transaction-id/{count}")
-    fun saveBySpringConcurrentAndAtomicByTransactionId(@PathVariable count: Int): ResponseDto {
-        var countUpd: Int
-        val time = measureTimeMillis {
-            countUpd = service.saveBySpringConcurrentWithTransactionIdAtomic(count)
-        }
-        return ResponseDto(
-            name = "save concurrent and atomic by tr. ID",
-            count = countUpd,
-            time = getTimeString(time)
-        )
-    }
-
     @PostMapping("/spring/{count}")
-    fun insertViaSpring(
-        @PathVariable count: Int,
-        @RequestParam transactionId: UUID? = null
-    ): ResponseDto {
+    fun insertViaSpring(@PathVariable count: Int): ResponseDto {
         val time = measureTimeMillis {
-            service.saveBySpring(count, transactionId)
+            service.saveBySpring(count)
         }
         return ResponseDto(
             name = "Save by Spring",

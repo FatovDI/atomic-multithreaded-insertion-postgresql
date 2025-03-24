@@ -12,5 +12,4 @@ select paymentdoc0_.id              as id1_4_,
        paymentdoc0_.prop_15         as prop_8_4_,
        paymentdoc0_.prop_20         as prop_9_4_
 from payment_document paymentdoc0_
-where ( paymentdoc0_.ready_to_read = true )
-  AND paymentdoc0_.order_date = '2025-01-19';
+where paymentdoc0_.order_date = '2025-03-24';
