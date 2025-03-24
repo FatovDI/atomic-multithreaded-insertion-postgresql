@@ -17,13 +17,12 @@ import javax.sql.DataSource
 class PaymentDocumentSaver(
     val paymentDocumentRepository: PaymentDocumentRepository,
     val sessionFactory: SessionFactory,
-    val dataSource: DataSource,
+    dataSource: DataSource,
+    val jdbcTemplate: JdbcTemplate = JdbcTemplate(dataSource),
 ) {
 
     @Value("\${batch_insertion.batch_size}")
     private var batchSize: Int = 5000
-
-    private val jdbcTemplate = JdbcTemplate(dataSource)
 
     fun removeTransactionId(transactionId: UUID): Int {
         return jdbcTemplate.update(
@@ -91,8 +90,13 @@ class PaymentDocumentSaver(
     fun batchUpdateBySession(entities: List<PaymentDocumentEntity>): List<PaymentDocumentEntity> {
         sessionFactory.openStatelessSession().use { session ->
             val transaction = session.beginTransaction()
-            entities.forEach { session.update(it) }
-            transaction.commit()
+            try {
+                entities.forEach { session.update(it) }
+                transaction.commit()
+            } catch (e: Exception) {
+                transaction.rollback()
+                throw e
+            }
         }
         return entities
     }
