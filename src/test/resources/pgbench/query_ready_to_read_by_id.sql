@@ -1,6 +1,6 @@
 SET SCHEMA 'test_insertion';
 
-\set id random(1000071, 1001071)
+\set id random(1002147, 1003148)
 
 select paymentdoc0_.id              as id1_4_,
        paymentdoc0_.account_id      as account10_4_,
