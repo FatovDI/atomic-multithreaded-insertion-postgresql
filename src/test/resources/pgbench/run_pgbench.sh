@@ -26,7 +26,7 @@ QUERY_FILE="query_anti_join_by_date.sql"
 # Construct the pgbench command with custom query and parameters
 function run_pgbench() {
   for (( i = 0; i < 3; i++ )); do
-    pgbench -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "$NUM_CLIENTS" -j "$NUM_CLIENTS" -t "$NUM_TRANSACTIONS" -f "$QUERY_FILE"
+    pgbench -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "$NUM_CLIENTS" -j "$NUM_CLIENTS" -t "$NUM_TRANSACTIONS" -f "$QUERY_FILE" > pgbench_"$i".log 2>&1
   done
 }
 
