@@ -2,11 +2,11 @@ package com.example.postgresqlinsertion.logic.service
 
 import com.example.postgresqlinsertion.logic.entity.AccountEntity
 import com.example.postgresqlinsertion.logic.entity.CurrencyEntity
-import com.example.postgresqlinsertion.logic.entity.PaymentDocumentActiveTransactionEntity
+import com.example.postgresqlinsertion.logic.entity.ActiveTransactionEntity
 import com.example.postgresqlinsertion.logic.entity.PaymentDocumentEntity
 import com.example.postgresqlinsertion.logic.repository.AccountRepository
 import com.example.postgresqlinsertion.logic.repository.CurrencyRepository
-import com.example.postgresqlinsertion.logic.repository.PaymentDocumentActiveTransactionRepository
+import com.example.postgresqlinsertion.logic.repository.ActiveTransactionRepository
 import com.example.postgresqlinsertion.logic.repository.PaymentDocumentCustomRepository
 import com.example.postgresqlinsertion.logic.sys.SqlHelper
 import com.example.postgresqlinsertion.utils.getRandomString
@@ -31,10 +31,8 @@ class PaymentDocumentService(
     private val sqlHelper: SqlHelper,
     private val repository: PaymentDocumentCustomRepository,
     private val saver: PaymentDocumentSaver,
-    private val activeTransactionRepository: PaymentDocumentActiveTransactionRepository,
+    private val activeTransactionRepository: ActiveTransactionRepository,
 ) {
-
-    private val log by logger()
 
     fun saveBySpringConcurrent(count: Int): List<Long> {
         val currencies = currencyRepo.findAll()
@@ -60,7 +58,7 @@ class PaymentDocumentService(
         var listForSave = mutableListOf<PaymentDocumentEntity>()
         val saveTasks = mutableListOf<Future<List<PaymentDocumentEntity>>>()
         val transactionId = Generators.timeBasedEpochGenerator().generate()
-        activeTransactionRepository.saveAndFlush(PaymentDocumentActiveTransactionEntity(transactionId = transactionId))
+        activeTransactionRepository.saveAndFlush(ActiveTransactionEntity(transactionId = transactionId))
         (1..count).forEach {
             listForSave.add(
                 getRandomEntity(null, currencies.random(), accounts.random(), transactionId)
@@ -73,7 +71,7 @@ class PaymentDocumentService(
         listForSave.takeIf { it.isNotEmpty() }?.let { saveTasks.add(saver.saveBatchAsync(it)) }
 
         val docs = saveTasks.flatMap { it.get() }
-        activeTransactionRepository.deleteAllByTransactionId(transactionId)
+        activeTransactionRepository.deleteById(transactionId)
         return docs.size
     }
 

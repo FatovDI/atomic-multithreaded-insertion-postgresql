@@ -5,7 +5,7 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "active_transaction")
-class PaymentDocumentActiveTransactionEntity(
+class ActiveTransactionEntity(
     @Id
     var transactionId: UUID? = null,
 )
